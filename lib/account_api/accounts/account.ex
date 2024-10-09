@@ -19,5 +19,12 @@ defmodule AccountApi.Accounts.Account do
     |> validate_required([:email, :hashed_password])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "Email must contain @ character and no spaces")
     |> unique_constraint(:email)
+    |> put_password_hash()
   end
+
+  defp put_password_hash(%Ecto.Changeset{valid?: true, changes: %{hashed_password: hashed_password}} = changeset) do
+    change(changeset, hashed_password: Bcrypt.hash_pwd_salt(hashed_password))
+  end
+
+  defp put_password_hash(changeset), do: changeset
 end
